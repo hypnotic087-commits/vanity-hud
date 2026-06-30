@@ -1,101 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aesthetic Vanity HUD</title>
     <style>
-        /* This sets the dark grey background and text style */
-        body { 
-            background: #222; 
-            color: white; 
-            font-family: sans-serif; 
-            text-align: center; 
-            margin-top: 20px;
+        /* Structural layout and high contrast design */
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
-        /* Styling for the top Tab Menu */
-        .tab-bar { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-        }
-        .tab-btn { 
-            padding: 10px 20px; 
-            background: #444; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 5px;
-        }
-        .tab-btn.active { 
-            background: #888; /* Highlights the selected tab */
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
         }
 
-        /* Hides sections unless they are active */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px; /* Negative-space gaps between buttons */
+            max-width: 400px;
+        }
 
-        /* Styling for the color swatches */
-        .swatch { 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 10px; 
-            border: 2px solid white; 
-            cursor: pointer; 
-            margin: 5px;
+        .vanity-btn {
+            background-color: transparent;
+            color: #ffffff;
+            border: 2px solid #ffffff; /* Crisp contour lines */
+            padding: 15px 30px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .vanity-btn:hover {
+            background-color: #ffffff;
+            color: #1a1a1a;
         }
     </style>
 </head>
 <body>
 
-    <h2>Aesthetic Vanity</h2>
+    <h1>Aesthetic Vanity</h1>
 
-    <!-- THE TABS -->
-    <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('lips')">Lips</button>
-        <button class="tab-btn" onclick="switchTab('eyes')">Eyes</button>
+    <div class="button-container">
+        <!-- Add or modify your buttons here -->
+        <button class="vanity-btn" onclick="sendCustomData('eyes', 'blue')">Blue Eyes</button>
+        <button class="vanity-btn" onclick="sendCustomData('lips', 'red')">Red Lips</button>
+        <button class="vanity-btn" onclick="sendCustomData('lips', 'black')">Black Lips</button>
     </div>
 
-    <!-- LIPS SECTION -->
-    <div id="lips" class="tab-content active">
-        <h3>Lip Colors</h3>
-        <button class="swatch" style="background: red;" onclick="sendToSL('lips', 'red')"></button>
-        <button class="swatch" style="background: pink;" onclick="sendToSL('lips', 'pink')"></button>
-    </div>
-
-    <!-- EYES SECTION -->
-    <div id="eyes" class="tab-content">
-        <h3>Eye Colors</h3>
-        <button class="swatch" style="background: blue;" onclick="sendToSL('eyes', 'blue')"></button>
-        <button class="swatch" style="background: green;" onclick="sendToSL('eyes', 'green')"></button>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // 1. Logic to switch between tabs
-        function switchTab(tabId) {
-            // Hide all content and remove active state from all buttons
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            // Show the clicked tab
-            document.getElementById(tabId).classList.add('active');
-            
-            // Note: In a real HUD, you'd match the button clicked to add the active class to it too.
-        }
+        function sendCustomData(targetPart, colorName) {
+            // Grab the sim URL from the address bar
+            const urlParams = new URLSearchParams(window.location.search);
+            const simUrl = urlParams.get('sim_url');
 
-        // 2. Logic to package and send data to Second Life
-        function sendToSL(layer, color) {
-            // Package the data into a JSON string
-            let commandData = JSON.stringify({ "target": layer, "color": color });
-            
-            // For testing in your browser, we'll just log it to the console/alert
-            alert("This will send to SL: " + commandData);
+            if (!simUrl) {
+                console.log("HUD not connected to Second Life. Button clicked: " + targetPart + " / " + colorName);
+                return;
+            }
 
-            /* 
-            When we connect this to SL later, we will use this code instead:
-            fetch(SECOND_LIFE_URL, { method: 'POST', body: commandData });
-            */
+            // Package the data
+            const payload = JSON.stringify({
+                target: targetPart,
+                color: colorName
+            });
+
+            // Send to the LSL script
+            fetch(simUrl, {
+                method: 'POST',
+                body: payload
+            }).then(response => {
+                console.log("Command sent successfully.");
+            }).catch(error => {
+                console.error("Error sending command:", error);
+            });
         }
     </script>
 </body>
 </html>
+
