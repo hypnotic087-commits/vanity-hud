@@ -18,10 +18,13 @@
             overflow: hidden;
         }
 
-        h1 {
+        /* This is your new diagnostic screen */
+        #status-text {
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 30px;
+            text-align: center;
+            transition: color 0.2s;
         }
 
         .button-container {
@@ -53,7 +56,7 @@
 </head>
 <body>
 
-    <h1>Aesthetic Vanity</h1>
+    <h1 id="status-text">Aesthetic Vanity</h1>
 
     <div class="button-container">
         <button class="vanity-btn" onclick="sendCustomData('eyes', 'style1')">Eye's</button>
@@ -67,19 +70,42 @@
 
     <script>
         function sendCustomData(targetPart, colorName) {
+            const statusEl = document.getElementById('status-text');
+            statusEl.innerText = "CHECKING URL...";
+            statusEl.style.color = "#aaaaaa";
+
+            // Check if the secret Second Life link actually made it to the webpage
             const urlParams = new URLSearchParams(window.location.search);
             const simUrl = urlParams.get('sim_url');
 
             if (!simUrl) {
-                console.log("HUD not connected.");
+                statusEl.innerText = "ERR: NO CONNECTION";
+                statusEl.style.color = "#ff4444"; // Turns Red
                 return;
             }
 
-            // Attaches your folder data as a safe query string
-            const requestUrl = simUrl + "/?target=" + targetPart + "&color=" + colorName;
-            
-            // Forces the data through via a background GET request, bypassing CORS blocks
-            fetch(requestUrl, { mode: 'no-cors' });
+            statusEl.innerText = "SENDING TO SL...";
+
+            // Send raw, simple text (e.g. "lips,style1")
+            const payload = targetPart + "," + colorName;
+
+            fetch(simUrl, {
+                method: 'POST',
+                body: payload
+            }).then(response => {
+                statusEl.innerText = "COMMAND SENT!";
+                statusEl.style.color = "#44ff44"; // Turns Green
+                
+                // Resets the title back to normal after 3 seconds
+                setTimeout(() => { 
+                    statusEl.innerText = "Aesthetic Vanity"; 
+                    statusEl.style.color = "#ffffff"; 
+                }, 3000);
+                
+            }).catch(error => {
+                statusEl.innerText = "NETWORK ERROR";
+                statusEl.style.color = "#ff4444"; // Turns Red
+            });
         }
     </script>
 </body>
